@@ -68,6 +68,7 @@ def init():
     # Save whatever should be saved
     initial_commit.dump()
     master_branch.dump()
+    index.dump()
     write_head(master_branch.name)
 
 
