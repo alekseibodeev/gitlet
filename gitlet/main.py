@@ -15,6 +15,8 @@ def main(args: list[str]) -> None:
     try:
         if command == "init":
             repository.init()
+        elif command == "add":
+            repository.add(args[2])
         elif command == "commit":
             repository.commit(args[2])
     except GitletException as e:
