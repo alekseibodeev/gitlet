@@ -1,3 +1,8 @@
+import sys
+from gitlet import repository
+from gitlet.error import GitletException
+
+
 def main(args: list[str]) -> None:
     """Drive for Gitlet, a subset of the Git version-control system.
 
@@ -6,4 +11,10 @@ def main(args: list[str]) -> None:
     Arguments:
     args -- a command line arguments passed to the program
     """
-    print("Hello, Gitlet!")
+    command = args[1]
+    try:
+        if command == "init":
+            repository.init()
+    except GitletException as e:
+        print(e, file=sys.stderr)
+        exit(1)

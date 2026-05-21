@@ -1,0 +1,22 @@
+import pickle
+from gitlet.constants import BRANCH_DIR
+
+
+class Branch:
+    """Represents a Gitlet branch object.
+
+    Attributes:
+    name -- a name of this branch
+    head -- the last commit made on this branch
+    """
+
+    def __init__(self, name: str, commit: str) -> None:
+        self.name = name
+        self.head = commit
+
+    def serialize(self) -> bytes:
+        return pickle.dumps(self)
+
+    def dump(self) -> None:
+        file = BRANCH_DIR / self.name
+        file.write_bytes(self.serialize())
