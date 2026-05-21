@@ -20,3 +20,9 @@ class Branch:
     def dump(self) -> None:
         file = BRANCH_DIR / self.name
         file.write_bytes(self.serialize())
+
+    @staticmethod
+    def load(name: str) -> Branch:
+        file = BRANCH_DIR / name
+        content = file.read_bytes()
+        return pickle.loads(content)

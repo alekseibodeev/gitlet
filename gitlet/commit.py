@@ -2,6 +2,7 @@ from datetime import datetime
 import pickle
 from hashlib import sha1
 from typing import Any
+from gitlet.blob import Blob
 from gitlet.constants import COMMIT_DIR
 
 
@@ -24,7 +25,7 @@ class Commit:
         message: str,
         timestamp: datetime,
         parents: list[str],
-        tracked: dict[str, str],
+        tracked: dict[str, Blob],
     ) -> None:
         self._id = None
         self.message = message
@@ -44,6 +45,12 @@ class Commit:
     def dump(self) -> None:
         file = COMMIT_DIR / self.id
         file.write_bytes(self.serialize())
+
+    @staticmethod
+    def load(commit_id: str) -> Commit:
+        file = COMMIT_DIR / commit_id
+        content = file.read_bytes()
+        return pickle.loads(content)
 
     def __getstate__(self) -> dict[str, Any]:
         return {
