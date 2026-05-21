@@ -4,6 +4,7 @@ from hashlib import sha1
 from typing import Any
 from gitlet.blob import Blob
 from gitlet.constants import COMMIT_DIR
+from gitlet import index
 
 
 class Commit:
@@ -66,3 +67,14 @@ class Commit:
         self.timestamp = state["timestamp"]
         self.parents = state["parents"]
         self.tracked = state["tracked"]
+
+    def commit(self, message: str) -> Commit:
+        """Creates a new child commit."""
+        tracked = {}
+        for name, blob in self.tracked:
+            if name in index.added or name in index.removed:
+                continue
+            tracked[name] = blob
+        for name, blob in index.added:
+            tracked[name] = blob
+        return Commit(message, datetime.now(), [self.id], tracked)

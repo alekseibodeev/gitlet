@@ -15,6 +15,8 @@ def main(args: list[str]) -> None:
     try:
         if command == "init":
             repository.init()
+        elif command == "commit":
+            repository.commit(args[2])
     except GitletException as e:
         print(e, file=sys.stderr)
         exit(1)

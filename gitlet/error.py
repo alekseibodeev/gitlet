@@ -12,3 +12,13 @@ class RepositoryAlreadyExists(GitletException):
 class FileExistsException(GitletException):
     def __init__(self):
         super().__init__("File does not exist.")
+
+
+class NoChangesException(GitletException):
+    def __init__(self):
+        super().__init__("No changes added to the commit")
+
+
+class BlankMessageExcepiton(GitletException):
+    def __init__(self):
+        super().__init__("Please enter a commit message.")

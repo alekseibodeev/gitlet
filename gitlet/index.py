@@ -25,3 +25,15 @@ def load() -> None:
     global added, removed
     content = INDEX_FILE.read_bytes()
     added, removed = pickle.loads(content)
+
+
+def empty() -> bool:
+    """Checks whether the staging area empty or not."""
+    return not added and not removed
+
+
+def clear() -> None:
+    """Deletes all files staged for addition and removal from staging area."""
+    global added, removed
+    added = {}
+    removed = set()

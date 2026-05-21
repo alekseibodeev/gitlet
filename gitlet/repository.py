@@ -10,7 +10,11 @@ from gitlet.constants import (
     HEAD_FILE,
     INDEX_FILE,
 )
-from gitlet.error import RepositoryAlreadyExists
+from gitlet.error import (
+    BlankMessageExcepiton,
+    NoChangesException,
+    RepositoryAlreadyExists,
+)
 from gitlet import index
 
 
@@ -98,4 +102,50 @@ def add(name: str) -> None:
     if name in index.removed:
         index.removed.remove(name)
     blob.dump()
+    index.dump()
+
+
+def commit(message: str) -> None:
+    """Creates a new commit.
+
+    Saves a snapshot of tracked files in the current commit and staging area so
+    they can be restored at a later time.
+
+    A commit will save and start tracking any files that were staged for addition,
+    but weren't tracked by its parent.
+
+    Files, tracked in the current commit may be untracked as a result being
+    staged for removal.
+
+    The staging area should be cleared after commit.
+
+    The commit command never adds, changes or removes files in the working directory.
+
+    Any changes made to files after staging for addition or removal are ignored
+    by the commid command.
+
+    After the commid command, the new commit becomes the current commit, and
+    the head pointer now points to it.
+
+    If no files have been staged, abort with error message:
+    - "No changes added to the commit."
+
+    If the given message is blank (or empty), exit with the following error:
+    - "Please enter a commit message"
+
+    Arguments:
+    message -- a message associated with this commit
+    """
+    index.load()
+    if index.empty():
+        raise NoChangesException()
+    if not message:
+        raise BlankMessageExcepiton()
+    current_branch = Branch.load(read_head())
+    current_commit = Commit.load(current_branch.head)
+    new_commit = current_commit.commit(message)
+    current_branch.head = new_commit.id
+    current_branch.dump()
+    new_commit.dump()
+    index.clear()
     index.dump()
