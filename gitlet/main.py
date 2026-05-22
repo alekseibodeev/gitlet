@@ -26,6 +26,8 @@ def main(args: list[str]) -> None:
                 repository.checkout(args[4], args[2])
             elif len(args) == 3:
                 repository.checkout(args[2], is_branch=True)
+        elif command == "log":
+            repository.log()
     except GitletException as e:
         print(e, file=sys.stderr)
         exit(1)

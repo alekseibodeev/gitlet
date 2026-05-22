@@ -81,3 +81,17 @@ class Commit:
         for name, blob in index.added.items():
             tracked[name] = blob
         return Commit(message, datetime.now(), [self.id], tracked)
+
+    def history(self) -> list[Commit]:
+        """Returns a list of commits that is a commit history."""
+        commits = []
+        current_commit = self
+        while current_commit.parents:
+            commits.append(current_commit)
+            current_commit = Commit.load(current_commit.parents[0])
+        commits.append(current_commit)
+        return commits
+
+    def __str__(self) -> str:
+        s = self.timestamp.strftime("%a %b %d %H:%M:%S %Y")
+        return f"===\ncommit {self.id}\nDate: {s}\n{self.message}\n"

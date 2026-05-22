@@ -208,3 +208,33 @@ def checkout(name: str, commit_id: str | None = None, is_branch: bool = False) -
         file.write_bytes(blob.content)
     else:
         pass  # TODO: implement case (3) branch checkout
+
+
+def log() -> None:
+    """Displays commit history.
+
+    Starting at the current head commit, output information about each commit
+    backwards along the commit tree until the initial commit, following the first
+    parent commit links, ingnoring any second parents found in merge commits.
+
+    Example of exact history format:
+
+    ===
+    commit a0da1ea5a15ab613bf9961fd86f010cf74c7ee48
+    Date: Thu Nov 09 20:00:05 2017
+    A commit message.
+
+    ===
+    commit 3e8bf1d794ca2e9ef8a4007275acf3751c7170ff
+    Date: Thu Nov 09 17:01:33 2017
+    Another commit message.
+
+    ===
+    commit e881c9575d180a215d1a636545b8fd9abfb1d2bb
+    Date: Thu Jan 01 00:00:00 1970
+    initial commit
+    """
+    current_branch = Branch.load(read_head())
+    current_commit = Commit.load(current_branch.head)
+    for commit_node in current_commit.history():
+        print(commit_node)
