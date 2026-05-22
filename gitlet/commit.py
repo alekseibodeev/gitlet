@@ -71,10 +71,10 @@ class Commit:
     def commit(self, message: str) -> Commit:
         """Creates a new child commit."""
         tracked = {}
-        for name, blob in self.tracked:
+        for name, blob in self.tracked.items():
             if name in index.added or name in index.removed:
                 continue
             tracked[name] = blob
-        for name, blob in index.added:
+        for name, blob in index.added.items():
             tracked[name] = blob
         return Commit(message, datetime.now(), [self.id], tracked)
