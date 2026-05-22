@@ -24,20 +24,20 @@ class Blob:
     def content(self):
         # Loads blob's content lazily on demand
         if not self._content:
-            file = BLOB_DIR / self.hash
+            file = BLOB_DIR / self.id
             self._content = file.read_bytes()
         return self._content
 
     def __eq__(self, other):
         if not isinstance(other, Blob):
             return NotImplemented
-        return self.hash == other.hash
+        return self.id == other.id
 
     def __getstate__(self):
-        return {"hash": self.hash}
+        return {"id": self.id}
 
     def __setstate__(self, state: dict[str, Any]):
-        self.hash = state["hash"]
+        self.id = state["id"]
         self._content = None
 
     def dump(self) -> None:
