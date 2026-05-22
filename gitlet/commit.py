@@ -5,6 +5,7 @@ from typing import Any
 from gitlet.blob import Blob
 from gitlet.constants import COMMIT_DIR
 from gitlet import index
+from gitlet.error import CommitExistsException
 
 
 class Commit:
@@ -50,6 +51,8 @@ class Commit:
     @staticmethod
     def load(commit_id: str) -> Commit:
         file = COMMIT_DIR / commit_id
+        if not file.exists():
+            raise CommitExistsException()
         content = file.read_bytes()
         return pickle.loads(content)
 

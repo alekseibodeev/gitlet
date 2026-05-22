@@ -9,9 +9,11 @@ from gitlet.constants import (
     BLOB_DIR,
     HEAD_FILE,
     INDEX_FILE,
+    WORKING_DIR,
 )
 from gitlet.error import (
     BlankMessageExcepiton,
+    FileNotTrackedExcepiton,
     NoChangesException,
     RepositoryAlreadyExists,
 )
@@ -150,3 +152,59 @@ def commit(message: str) -> None:
     new_commit.dump()
     index.clear()
     index.dump()
+
+
+def checkout(name: str, commit_id: str | None = None, is_branch: bool = False) -> None:
+    """Checkout file or branch to the working directory.
+
+    There are three possible use cases for this command:
+
+    1. Takes the version of the file as it exists in the head commit and puts it
+    in the working directory, overwriting the version of the file that's already
+    there if there is one.
+
+    2. Takes the version of the file as it exists in the commit with the given id,
+    and puts it in the working directory, overwriting the version of the file that's
+    already there.
+
+    3. Takes all files in the commit at the head of the given branch, and puts
+    them in the working directory. Also, at the end of this command, the given
+    branch will now be considered the curren branch (HEAD). Any files that are
+    tracked in the current branch, but are not presented in the checked-out branch
+    are deleted. The staging area is cleared.
+
+    If the file does not exist in the previous commit, abort with error:
+    - "File does not exist in that commit."
+
+    If no commit with the given id exists, print:
+    - "No commit with that id exists."
+
+    If no branch with that name exists, exit with message:
+    - "No such branch exists."
+
+    If that branch is the current branch, print:
+    - "No need to checkout the current branch."
+
+    If a file is untracked in the current branch and would be overwritten by
+    the checkout, abort and print error:
+    - "There is an untracked file in the way; delete it, or add and commmit it first."
+
+    Arguments:
+    name -- the name of a file or a branch
+    commit_id -- the id of the given commit (can be less than 40 characters)
+    is_branch -- determines whether the name should be considered as a file or a branch
+    """
+    current_branch = Branch.load(read_head())
+    current_commit = Commit.load(current_branch.head)
+    if not is_branch:
+        if not commit_id:
+            given_commit = current_commit
+        else:
+            given_commit = Commit.load(commit_id)
+        if name not in given_commit.tracked:
+            raise FileNotTrackedExcepiton()
+        file = WORKING_DIR / name
+        blob = given_commit.tracked[name]
+        file.write_bytes(blob.content)
+    else:
+        pass  # TODO: implement case (3) branch checkout

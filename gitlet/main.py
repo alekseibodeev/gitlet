@@ -19,6 +19,13 @@ def main(args: list[str]) -> None:
             repository.add(args[2])
         elif command == "commit":
             repository.commit(args[2])
+        elif command == "checkout":
+            if len(args) == 4:
+                repository.checkout(args[3])
+            elif len(args) == 5:
+                repository.checkout(args[4], args[2])
+            elif len(args) == 3:
+                repository.checkout(args[2], is_branch=True)
     except GitletException as e:
         print(e, file=sys.stderr)
         exit(1)
