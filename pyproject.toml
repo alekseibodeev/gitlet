@@ -11,3 +11,6 @@ dependencies = [
 [tool.pyright]
 venvPath = "."
 venv = ".venv"
+
+[tool.ruff.lint]
+extend-select = ["I"]
