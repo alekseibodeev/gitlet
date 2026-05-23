@@ -1,18 +1,11 @@
-import os
 import re
 from pathlib import Path
 
 import gitlet
-
-ID = r"(?P<id>[a-f0-9]{40})"
-DATE = r"(?P<date>\w\w\w \w\w\w \d\d \d\d:\d\d:\d\d \d\d\d\d)"
-MESSAGE = r"(?P<message>.+)"
-LOG = rf"===\ncommit {ID}\nDate: {DATE}\n{MESSAGE}\n\n"
+from tests.definitions import LOG
 
 
-def test_log_init(tmp_path, capsys):
-    os.chdir(tmp_path)
-    gitlet.main(["gitlet", "init"])
+def test_log_init(capsys):
     gitlet.main(["gitlet", "log"])
     captured = capsys.readouterr()
     match = re.fullmatch(LOG, captured.out)
@@ -21,9 +14,7 @@ def test_log_init(tmp_path, capsys):
     assert match.group("message") == "initial commit"
 
 
-def test_log_two_commits(tmp_path, capsys):
-    os.chdir(tmp_path)
-    gitlet.main(["gitlet", "init"])
+def test_log_two_commits(capsys):
     file = Path("hello")
     file.write_text("hello")
     gitlet.main(["gitlet", "add", "hello"])

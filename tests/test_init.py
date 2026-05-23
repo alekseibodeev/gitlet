@@ -1,20 +1,16 @@
-import os
+from pathlib import Path
 
 import pytest
 
 import gitlet
 
 
-def test_init_basic(tmp_path):
-    os.chdir(tmp_path)
-    gitlet_dir = tmp_path / ".gitlet"
-    gitlet.main(["gitlet", "init"])
+def test_init_basic():
+    gitlet_dir = Path(".gitlet")
     assert gitlet_dir.exists()
 
 
-def test_init_repo_already_exist(tmp_path, capsys):
-    os.chdir(tmp_path)
-    gitlet.main(["gitlet", "init"])
+def test_init_repo_already_exist(capsys):
     with pytest.raises(SystemExit):
         gitlet.main(["gitlet", "init"])
     _, err = capsys.readouterr()

@@ -1,12 +1,9 @@
-import os
 from pathlib import Path
 
 import gitlet
 
 
-def test_checkout_basic(tmp_path):
-    os.chdir(tmp_path)
-    gitlet.main(["gitlet", "init"])
+def test_checkout_basic():
     file = Path("hello")
     file.write_text("hello")
     gitlet.main(["gitlet", "add", "hello"])
