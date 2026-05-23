@@ -5,9 +5,9 @@ be added or removed on the next successful commit command.
 """
 
 import pickle
+
 from gitlet.blob import Blob
 from gitlet.constants import INDEX_FILE
-
 
 added: dict[str, Blob] = {}
 removed: set[str] = set()

@@ -1,10 +1,11 @@
-from datetime import datetime
 import pickle
+from datetime import datetime
 from hashlib import sha1
 from typing import Any
+
+from gitlet import index
 from gitlet.blob import Blob
 from gitlet.constants import COMMIT_DIR
-from gitlet import index
 from gitlet.error import CommitExistsException
 
 

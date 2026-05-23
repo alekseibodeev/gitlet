@@ -1,12 +1,14 @@
 from datetime import datetime
+
+from gitlet import index
 from gitlet.blob import Blob
-from gitlet.commit import Commit
 from gitlet.branch import Branch
+from gitlet.commit import Commit
 from gitlet.constants import (
-    GITLET_DIR,
+    BLOB_DIR,
     BRANCH_DIR,
     COMMIT_DIR,
-    BLOB_DIR,
+    GITLET_DIR,
     HEAD_FILE,
     INDEX_FILE,
     WORKING_DIR,
@@ -17,7 +19,6 @@ from gitlet.error import (
     NoChangesException,
     RepositoryAlreadyExists,
 )
-from gitlet import index
 
 
 def write_head(name: str) -> None:

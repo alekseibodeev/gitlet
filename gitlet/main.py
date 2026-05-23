@@ -1,4 +1,5 @@
 import sys
+
 from gitlet import repository
 from gitlet.error import GitletException
 

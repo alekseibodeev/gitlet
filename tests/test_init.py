@@ -1,6 +1,8 @@
 import os
-import gitlet
+
 import pytest
+
+import gitlet
 
 
 def test_init_basic(tmp_path):
