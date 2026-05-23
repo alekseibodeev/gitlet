@@ -16,7 +16,7 @@ class FileExistsException(GitletException):
 
 class NoChangesException(GitletException):
     def __init__(self):
-        super().__init__("No changes added to the commit")
+        super().__init__("No changes added to the commit.")
 
 
 class BlankMessageExcepiton(GitletException):
