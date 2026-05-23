@@ -143,7 +143,7 @@ def commit(message: str) -> None:
     index.load()
     if index.empty():
         raise NoChangesException()
-    if not message:
+    if not message.strip():
         raise BlankMessageExcepiton()
     current_branch = Branch.load(read_head())
     current_commit = Commit.load(current_branch.head)
