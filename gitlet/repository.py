@@ -15,6 +15,7 @@ from gitlet.constants import (
 )
 from gitlet.error import (
     BlankMessageExcepiton,
+    BranchExistsException,
     FileNotTrackedExcepiton,
     NoChangesException,
     NoReasonToRemoveException,
@@ -269,3 +270,24 @@ def remove(name: str) -> None:
     else:
         raise NoReasonToRemoveException()
     index.dump()
+
+
+def branch(name: str) -> None:
+    """Creates a new branch with the given name.
+
+    Newly created branch points at the current head commit.
+
+    This command does not immediately switch to the newly created branch.
+
+    If a branch with the given name already exists, print the error message:
+    - "A branch with that name already exists."
+
+    Attributes:
+    name -- a new of the new branch
+    """
+    current_branch = Branch.load(read_head())
+    current_commit = Commit.load(current_branch.head)
+    new_branch = Branch(name, current_commit.id)
+    if new_branch.exists():
+        raise BranchExistsException()
+    new_branch.dump()

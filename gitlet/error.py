@@ -37,3 +37,8 @@ class FileNotTrackedExcepiton(GitletException):
 class NoReasonToRemoveException(GitletException):
     def __init__(self):
         super().__init__("No reason to remove the file.")
+
+
+class BranchExistsException(GitletException):
+    def __init__(self):
+        super().__init__("A branch with that name already exists.")

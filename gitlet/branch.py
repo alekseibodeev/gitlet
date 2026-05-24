@@ -27,3 +27,7 @@ class Branch:
         file = BRANCH_DIR / name
         content = file.read_bytes()
         return pickle.loads(content)
+
+    def exists(self) -> bool:
+        file = BRANCH_DIR / self.name
+        return file.exists()
