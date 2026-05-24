@@ -32,3 +32,8 @@ class CommitExistsException(GitletException):
 class FileNotTrackedExcepiton(GitletException):
     def __init__(self):
         super().__init__("File does not exist in that commit.")
+
+
+class NoReasonToRemoveException(GitletException):
+    def __init__(self):
+        super().__init__("No reason to remove the file.")

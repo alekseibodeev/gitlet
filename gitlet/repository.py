@@ -17,6 +17,7 @@ from gitlet.error import (
     BlankMessageExcepiton,
     FileNotTrackedExcepiton,
     NoChangesException,
+    NoReasonToRemoveException,
     RepositoryAlreadyExists,
 )
 
@@ -239,3 +240,32 @@ def log() -> None:
     current_commit = Commit.load(current_branch.head)
     for commit_node in current_commit.history():
         print(commit_node)
+
+
+def remove(name: str) -> None:
+    """Stages file for removal.
+
+    Unstage the file if it is currently staged for addition.
+
+    If the file is tracked in the current commit, stage it for removal and remove
+    the file from working directory if the user has not already done so.
+
+    If the file is neither staged nor tracked by the head commit, print error:
+    - "No reason to remove the file."
+
+    Arguments:
+    name -- a name of the file to remove
+    """
+    current_branch = Branch.load(read_head())
+    current_commit = Commit.load(current_branch.head)
+    index.load()
+    if name in index.added:
+        del index.added[name]
+    elif name in current_commit.tracked:
+        index.removed.add(name)
+        file = WORKING_DIR / name
+        if file.exists():
+            file.unlink()
+    else:
+        raise NoReasonToRemoveException()
+    index.dump()
