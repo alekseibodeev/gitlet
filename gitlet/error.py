@@ -42,3 +42,20 @@ class NoReasonToRemoveException(GitletException):
 class BranchExistsException(GitletException):
     def __init__(self):
         super().__init__("A branch with that name already exists.")
+
+
+class NoBranchExistsException(GitletException):
+    def __init__(self):
+        super().__init__("No such branch exists.")
+
+
+class HeadCheckoutException(GitletException):
+    def __init__(self):
+        super().__init__("No need to checkout the current branch.")
+
+
+class CheckoutUnsafeException(GitletException):
+    def __init__(self):
+        super().__init__(
+            "There is an untracked file in the way; delete it, or add and commmit it first."
+        )

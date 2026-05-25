@@ -17,6 +17,7 @@ from gitlet.error import (
     BlankMessageExcepiton,
     BranchExistsException,
     FileNotTrackedExcepiton,
+    HeadCheckoutException,
     NoChangesException,
     NoReasonToRemoveException,
     RepositoryAlreadyExists,
@@ -210,7 +211,15 @@ def checkout(name: str, commit_id: str | None = None, is_branch: bool = False) -
         blob = given_commit.tracked[name]
         file.write_bytes(blob.content)
     else:
-        pass  # TODO: implement case (3) branch checkout
+        given_branch = Branch.load(name)
+        if current_branch.name == given_branch.name:
+            raise HeadCheckoutException()
+        given_commit = Commit.load(given_branch.head)
+        given_commit.checkout(current_commit)
+        write_head(given_branch.name)
+        # If the staging area (INDEX) is not loaded it starts empty,
+        # so it's safe to just dump it in order to perform clean up
+        index.dump()
 
 
 def log() -> None:

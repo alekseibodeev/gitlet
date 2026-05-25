@@ -5,8 +5,8 @@ from typing import Any
 
 from gitlet import index
 from gitlet.blob import Blob
-from gitlet.constants import COMMIT_DIR
-from gitlet.error import CommitExistsException
+from gitlet.constants import COMMIT_DIR, WORKING_DIR
+from gitlet.error import CheckoutUnsafeException, CommitExistsException
 
 
 class Commit:
@@ -96,3 +96,33 @@ class Commit:
     def __str__(self) -> str:
         s = self.timestamp.strftime("%a %b %d %H:%M:%S %Y")
         return f"===\ncommit {self.id}\nDate: {s}\n{self.message}\n"
+
+    def safe_checkout(self, current_commit: Commit) -> bool:
+        """Determines whether it is safe to make a checkout.
+
+        Safe means that checking out of all the files in this commit would not
+        make any files untracked in the current commit inaccessible.
+        """
+        for name in self.tracked:
+            file = WORKING_DIR / name
+            if file.exists() and name not in current_commit.tracked:
+                return False
+        return True
+
+    def checkout(self, current_commit: Commit) -> None:
+        """Puts all files of this commit the the working directory.
+
+        Overwrites the versions of the files tracked by the current commit.
+
+        Deletes all the files that are presented in the current commit, but
+        not tracked by this commit.
+        """
+        if not self.safe_checkout(current_commit):
+            raise CheckoutUnsafeException()
+        for name, blob in self.tracked.items():
+            file = WORKING_DIR / name
+            file.write_bytes(blob.content)
+        for name in current_commit.tracked:
+            if name not in self.tracked:
+                file = WORKING_DIR / name
+                file.unlink()

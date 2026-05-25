@@ -1,6 +1,7 @@
 import pickle
 
 from gitlet.constants import BRANCH_DIR
+from gitlet.error import NoBranchExistsException
 
 
 class Branch:
@@ -25,6 +26,8 @@ class Branch:
     @staticmethod
     def load(name: str) -> Branch:
         file = BRANCH_DIR / name
+        if not file.exists():
+            raise NoBranchExistsException()
         content = file.read_bytes()
         return pickle.loads(content)
 
