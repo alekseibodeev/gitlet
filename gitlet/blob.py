@@ -23,7 +23,7 @@ class Blob:
     @property
     def content(self):
         # Loads blob's content lazily on demand
-        if not self._content:
+        if self._content is None:
             file = BLOB_DIR / self.id
             self._content = file.read_bytes()
         return self._content
@@ -53,3 +53,14 @@ class Blob:
         content = file.read_bytes()
         blob_id = sha1(content).hexdigest()
         return Blob(blob_id, content)
+
+    @staticmethod
+    def from_content(content: bytes) -> Blob:
+        """Creates a new blob from the given content."""
+        id = sha1(content).hexdigest()
+        return Blob(id, content)
+
+    @staticmethod
+    def stub() -> Blob:
+        """Returns empty blob that is usefull as sentinel."""
+        return Blob("", b"")

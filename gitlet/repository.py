@@ -16,11 +16,14 @@ from gitlet.constants import (
 from gitlet.error import (
     BlankMessageExcepiton,
     BranchExistsException,
+    CheckoutUnsafeException,
     FileNotTrackedExcepiton,
     HeadCheckoutException,
+    MergeItselfException,
     NoChangesException,
     NoReasonToRemoveException,
     RepositoryAlreadyExists,
+    UncommitedChangexException,
 )
 
 
@@ -215,6 +218,8 @@ def checkout(name: str, commit_id: str | None = None, is_branch: bool = False) -
         if current_branch.name == given_branch.name:
             raise HeadCheckoutException()
         given_commit = Commit.load(given_branch.head)
+        if not given_commit.safe_checkout(current_commit):
+            raise CheckoutUnsafeException()
         given_commit.checkout(current_commit)
         write_head(given_branch.name)
         # If the staging area (INDEX) is not loaded it starts empty,
@@ -300,3 +305,137 @@ def branch(name: str) -> None:
     if new_branch.exists():
         raise BranchExistsException()
     new_branch.dump()
+
+
+def get_conflict_message(current_content: bytes, given_content: bytes) -> bytes:
+    return b"<<<<<<< HEAD\n%s=======\n%s>>>>>>>\n" % (current_content, given_content)
+
+
+def merge(name: str) -> None:
+    """Merges files from the given branch to the current branch.
+
+    If the split point is the same commit as the given branch, then the merge is
+    complete and the operation ends with the message:
+    - "Given branch is an ancestor of the current branch."
+
+    If the split point it the current branch's head, then the effect is to check
+    out the given branch, and print the message:
+    - "Current branch fast-forwarded."
+
+    Otherwise program continues with the following steps:
+
+    1. Any files that have been modified in the given branch since the split point,
+    but not modified the current branch should be changed to their versions in
+    the given branch
+
+    2. Any files that have been modified in the current branch, but not in the
+    given branch since the split point should stay as they are
+
+    3. Any files that have been modified in both the current and the given branches
+    in the same way are left unchanged by the merge.
+
+    4. Any files that were not presented at the split point and are presented
+    only in the current branch should remain as they are
+
+    5. Any files that were not presented at the split point and are presented
+    only in the given branch should be checked out
+
+    6. Any files presented at the split point, unmodified at the current branch
+    and absent in the given branch should be removed
+
+    7. Any files presented at the split point, unmodified at the given branch and
+    absent in the current branch should remain absent
+
+    8. Any files modified in a different ways in the current and the given branches
+    are in conflict.
+
+    The content of the files in conflict should be replaced with:
+    <<<<<<< HEAD
+    content of the file in current branch
+    =======
+    content of the file in given branch
+    >>>>>>>
+
+    If the merge encoutered the conflict, prints the message:
+    - "Encountered a merge conflict."
+
+    Merge should be automatically commited with the following message:
+    - "Merge <given branch> into <current branch>."
+
+    Merge commits have two parents.
+
+    If staging area is not empty, abort and print error message:
+    - "You have uncommited changes."
+
+    If a branch with the given name does not exist, print error message:
+    - "No such branch exists."
+
+    If attemption to merge a branch with itself, should print error:
+    - "Cannot merge a branch with itself."
+
+    If a file is untracked in the current branch and would be overwritten by
+    the merge, abort and print error:
+    - "There is an untracked file in the way; delete it, or add and commmit it first."
+
+    Arguments:
+    name -- a name of the branch to merge
+    """
+    index.load()
+    if not index.empty():
+        raise UncommitedChangexException()
+    current_branch = Branch.load(read_head())
+    given_branch = Branch.load(name)
+    if current_branch.name == given_branch.name:
+        raise MergeItselfException()
+    current_commit = Commit.load(current_branch.head)
+    given_commit = Commit.load(given_branch.head)
+    split_point = current_commit.split_point(given_commit)
+    if split_point == given_commit:
+        print("Given branch is an ancestor of the current branch.")
+    elif split_point == current_commit:
+        given_commit.checkout(current_commit)
+        current_branch.head = given_commit.id
+        current_branch.dump()
+        print("Current branch fast-forwarded.")
+    else:
+        if not given_commit.safe_checkout(current_commit):
+            raise CheckoutUnsafeException()
+        conflict = False
+        for name, given_blob in given_commit.tracked.items():
+            current_blob = current_commit.tracked.get(name, Blob.stub())
+            split_blob = split_point.tracked.get(name, Blob.stub())
+            if given_blob != split_blob:
+                if current_blob == split_blob:
+                    index.added[name] = given_blob
+                else:
+                    conflict = True
+                    content = get_conflict_message(
+                        current_blob.content, given_blob.content
+                    )
+                    blob = Blob.from_content(content)
+                    blob.dump()
+                    index.added[name] = blob
+        for name, current_blob in current_commit.tracked.items():
+            given_blob = given_commit.tracked.get(name, Blob.stub())
+            split_blob = split_point.tracked.get(name, Blob.stub())
+            if given_blob == Blob.stub() and split_blob != Blob.stub():
+                if current_blob == split_blob:
+                    index.removed.add(name)
+                else:
+                    conflict = True
+                    content = get_conflict_message(
+                        current_blob.content, given_blob.content
+                    )
+                    blob = Blob.from_content(content)
+                    blob.dump()
+                    index.added[name] = blob
+        message = f"Merged {given_branch.name} into {current_branch.name}."
+        new_commit = current_commit.commit(message)
+        new_commit.parents.append(given_commit.id)
+        new_commit.checkout(current_commit)
+        current_branch.head = new_commit.id
+        new_commit.dump()
+        current_branch.dump()
+        index.clear()
+        if conflict:
+            print("Encountered a merge conflict.")

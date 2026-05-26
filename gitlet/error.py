@@ -59,3 +59,13 @@ class CheckoutUnsafeException(GitletException):
         super().__init__(
             "There is an untracked file in the way; delete it, or add and commmit it first."
         )
+
+
+class UncommitedChangexException(GitletException):
+    def __init__(self):
+        super().__init__("You have uncommited changes.")
+
+
+class MergeItselfException(GitletException):
+    def __init__(self):
+        super().__init__("Cannot merge a branch with itself.")

@@ -1,4 +1,5 @@
 import pickle
+from collections import deque
 from datetime import datetime
 from hashlib import sha1
 from typing import Any
@@ -6,7 +7,8 @@ from typing import Any
 from gitlet import index
 from gitlet.blob import Blob
 from gitlet.constants import COMMIT_DIR, WORKING_DIR
-from gitlet.error import CheckoutUnsafeException, CommitExistsException
+from gitlet.error import CommitExistsException
+from gitlet.graph import Graph
 
 
 class Commit:
@@ -57,6 +59,11 @@ class Commit:
         content = file.read_bytes()
         return pickle.loads(content)
 
+    def __eq__(self, other) -> bool:
+        if not isinstance(other, Commit):
+            return NotImplemented
+        return self.id == other.id
+
     def __getstate__(self) -> dict[str, Any]:
         return {
             "message": self.message,
@@ -93,6 +100,21 @@ class Commit:
         commits.append(current_commit)
         return commits
 
+    def history2(self) -> list[Commit]:
+        """Returns a list of commits by following all parent links."""
+        commits: list[Commit] = []
+        queue: deque[Commit] = deque([self])
+        visited: set[str] = set([self.id])
+        while queue:
+            current_commit = queue.popleft()
+            commits.append(current_commit)
+            for parent_id in self.parents:
+                parent = Commit.load(parent_id)
+                if parent.id not in visited:
+                    queue.append(parent)
+                    visited.add(parent.id)
+        return commits
+
     def __str__(self) -> str:
         s = self.timestamp.strftime("%a %b %d %H:%M:%S %Y")
         return f"===\ncommit {self.id}\nDate: {s}\n{self.message}\n"
@@ -117,8 +139,6 @@ class Commit:
         Deletes all the files that are presented in the current commit, but
         not tracked by this commit.
         """
-        if not self.safe_checkout(current_commit):
-            raise CheckoutUnsafeException()
         for name, blob in self.tracked.items():
             file = WORKING_DIR / name
             file.write_bytes(blob.content)
@@ -126,3 +146,20 @@ class Commit:
             if name not in self.tracked:
                 file = WORKING_DIR / name
                 file.unlink()
+
+    def split_point(self, other: Commit) -> Commit:
+        """Finds split point of SELF and OTHER commits."""
+        self_history = self.history2()
+        other_history = other.history2()
+        g = Graph()
+        for commit_node in self_history:
+            for parent_id in commit_node.parents:
+                g.add(parent_id, commit_node.id)
+        for commit_node in other_history:
+            for parent_id in commit_node.parents:
+                g.add(parent_id, commit_node.id)
+        start = self_history[-1].id
+        p = self.id
+        q = other.id
+        split_point_id = g.latest_common_ancestor(start, p, q)
+        return Commit.load(split_point_id)
