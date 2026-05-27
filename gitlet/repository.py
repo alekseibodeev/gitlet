@@ -360,7 +360,7 @@ def merge(name: str) -> None:
     - "Encountered a merge conflict."
 
     Merge should be automatically commited with the following message:
-    - "Merge <given branch> into <current branch>."
+    - "Merged <given branch> into <current branch>."
 
     Merge commits have two parents.
 
@@ -389,6 +389,8 @@ def merge(name: str) -> None:
         raise MergeItselfException()
     current_commit = Commit.load(current_branch.head)
     given_commit = Commit.load(given_branch.head)
+    if not given_commit.safe_checkout(current_commit):
+        raise CheckoutUnsafeException()
     split_point = current_commit.split_point(given_commit)
     if split_point == given_commit:
         print("Given branch is an ancestor of the current branch.")
@@ -398,8 +400,6 @@ def merge(name: str) -> None:
         current_branch.dump()
         print("Current branch fast-forwarded.")
     else:
-        if not given_commit.safe_checkout(current_commit):
-            raise CheckoutUnsafeException()
         conflict = False
         for name, given_blob in given_commit.tracked.items():
             current_blob = current_commit.tracked.get(name, Blob.stub())
@@ -436,6 +436,5 @@ def merge(name: str) -> None:
         current_branch.head = new_commit.id
         new_commit.dump()
         current_branch.dump()
-        index.clear()
         if conflict:
             print("Encountered a merge conflict.")
