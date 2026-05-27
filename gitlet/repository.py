@@ -438,3 +438,131 @@ def merge(name: str) -> None:
         current_branch.dump()
         if conflict:
             print("Encountered a merge conflict.")
+
+
+def get_modified(current_commit: Commit) -> list[str]:
+    """Returns a sorted list of files modified in the working directory."""
+    files: list[str] = []
+    for name, current_blob in current_commit.tracked.items():
+        file = WORKING_DIR / name
+        if file.exists():
+            blob = Blob.from_file(name)
+            if current_blob != blob and (
+                name not in index.added or index.added[name] != blob
+            ):
+                files.append(name)
+    files.sort()
+    return files
+
+
+def get_deleted(current_commit: Commit) -> list[str]:
+    """Returns a sorted list of files deleted from the working directory."""
+    files = set()
+    for name in current_commit.tracked:
+        file = WORKING_DIR / name
+        if not file.exists() and name not in index.removed:
+            files.add(name)
+    for name in index.added:
+        file = WORKING_DIR / name
+        if not file.exists():
+            files.add(name)
+    return sorted(files)
+
+
+def get_untracked(current_commit: Commit) -> list[str]:
+    """Returns a sorted list of untracked files."""
+    files: list[str] = []
+    for file in WORKING_DIR.iterdir():
+        if file.is_file():
+            name = str(file)
+            if name not in current_commit.tracked and name not in index.added:
+                files.append(name)
+    files.sort()
+    return files
+
+
+def status() -> None:
+    """Prints out the current state of the working directory.
+
+    Displays what branches currently exist, and marks the current branch with a *.
+    Also displays what files have been staged for addition or removal, modified
+    or untracked.
+
+    Modified files are:
+    - Tracked in the current commit, changed in the working directory, but not
+      staged
+    - Staged for addition, but with different contents than in the working directory
+    - Staged for addition, but deleted in the working directory
+    - Not staged for removal, but tracked in the current commit and deleted from
+      the working directory
+
+    Untracked files are files presented in the working directory, but neither
+    staged nor tracked in the head commit.
+
+    There is an empty line after each section.
+
+    Example format:
+    === Branches ===
+    *master
+    other
+
+    === Staged Files ===
+    hello.txt
+    world.txt
+
+    === Removed Files ===
+    mars.txt
+
+    === Modifications Not Staged For Commit ===
+    goodbye.txt (modified)
+    junk.txt (deleted)
+
+    === Untracked Files ===
+    lorem.txt
+
+    """
+    index.load()
+    current_branch = Branch.load(read_head())
+    current_commit = Commit.load(current_branch.head)
+    branches = Branch.list()
+    print("=== Branches ===")
+    for name in branches:
+        if name == current_branch.name:
+            print("*" + name)
+        else:
+            print(name)
+    print()
+    staged = sorted(index.added)
+    print("=== Staged Files ===")
+    for name in staged:
+        print(name)
+    print()
+    removed = sorted(index.removed)
+    print("=== Removed Files ===")
+    for name in removed:
+        print(name)
+    print()
+    modified = get_modified(current_commit)
+    deleted = get_deleted(current_commit)
+    print("=== Modifications Not Staged For Commit ===")
+    i = 0
+    j = 0
+    while i < len(modified) and j < len(deleted):
+        if modified[i] < deleted[i]:
+            print(modified[i], "(modified)")
+            i += 1
+        else:
+            print(deleted[i], "(deleted)")
+            j += 1
+    while i < len(modified):
+        print(modified[i], "(modified)")
+        i += 1
+    while j < len(deleted):
+        print(deleted[j], "(deleted)")
+        j += 1
+    print()
+    untracked = get_untracked(current_commit)
+    print("=== Untracked Files ===")
+    for name in untracked:
+        print(name)
+    print()

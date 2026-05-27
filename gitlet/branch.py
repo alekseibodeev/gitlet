@@ -34,3 +34,12 @@ class Branch:
     def exists(self) -> bool:
         file = BRANCH_DIR / self.name
         return file.exists()
+
+    @staticmethod
+    def list() -> list[str]:
+        """Lists all existing branches in sorted order."""
+        branches: list[str] = []
+        for b in BRANCH_DIR.iterdir():
+            branches.append(b.name)
+        branches.sort()
+        return branches
