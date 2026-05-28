@@ -1,6 +1,5 @@
 import re
 
-
 ID = r"(?P<id>[a-f0-9]{40})"
 DATE = r"(?P<date>\w\w\w \w\w\w \d\d \d\d:\d\d:\d\d \d\d\d\d)"
 MESSAGE = r"(?P<message>.+)"
