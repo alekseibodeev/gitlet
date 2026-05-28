@@ -264,6 +264,19 @@ def global_log() -> None:
         print(commit_node)
 
 
+def find(message: str) -> None:
+    """Prints out the ids of all commits that have the given message.
+
+    If there are multiple such commits, it prints the ids out on separate lines.
+
+    Arguments:
+    message -- commit message to search for
+    """
+    for commit_node in Commit.list_all():
+        if commit_node.message == message:
+            print(commit_node.id)
+
+
 def remove(name: str) -> None:
     """Stages file for removal.
 
