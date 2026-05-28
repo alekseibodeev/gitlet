@@ -115,7 +115,7 @@ class Commit:
                     visited.add(parent.id)
         return commits
 
-    def __str__(self) -> str:
+    def log(self) -> str:
         s = self.timestamp.strftime("%a %b %d %H:%M:%S %Y")
         return f"===\ncommit {self.id}\nDate: {s}\n{self.message}\n"
 

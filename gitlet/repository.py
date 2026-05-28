@@ -255,13 +255,13 @@ def log() -> None:
     current_branch = Branch.load(read_head())
     current_commit = Commit.load(current_branch.head)
     for commit_node in current_commit.history():
-        print(commit_node)
+        print(commit_node.log())
 
 
 def global_log() -> None:
     """Displays information about all commits ever made."""
     for commit_node in Commit.list_all():
-        print(commit_node)
+        print(commit_node.log())
 
 
 def find(message: str) -> None:
