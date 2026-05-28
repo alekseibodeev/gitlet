@@ -163,3 +163,11 @@ class Commit:
         q = other.id
         split_point_id = g.latest_common_ancestor(start, p, q)
         return Commit.load(split_point_id)
+
+    @staticmethod
+    def list_all() -> list[Commit]:
+        """List all commits ever made in this repository."""
+        commits = []
+        for file in COMMIT_DIR.iterdir():
+            commits.append(Commit.load(file.name))
+        return commits

@@ -258,6 +258,12 @@ def log() -> None:
         print(commit_node)
 
 
+def global_log() -> None:
+    """Displays information about all commits ever made."""
+    for commit_node in Commit.list_all():
+        print(commit_node)
+
+
 def remove(name: str) -> None:
     """Stages file for removal.
 
