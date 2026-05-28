@@ -23,6 +23,6 @@ def parse_status_message(message: str) -> list[list[str]]:
     removed = match.group("removed").strip().split()
     modifications = []
     for mod in match.group("modifications").strip().split("\n"):
-        modifications.append(mod.split()[0])
+        modifications.append(mod.split(" ")[0])
     untracked = match.group("untracked").strip().split()
     return [branches, staged, removed, modifications, untracked]

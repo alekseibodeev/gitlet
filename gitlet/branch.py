@@ -43,3 +43,7 @@ class Branch:
             branches.append(b.name)
         branches.sort()
         return branches
+
+    def remove(self) -> None:
+        file = BRANCH_DIR / self.name
+        file.unlink()

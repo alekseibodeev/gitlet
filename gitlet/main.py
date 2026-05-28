@@ -37,6 +37,8 @@ def main(args: list[str]) -> None:
             repository.merge(args[2])
         elif command == "status":
             repository.status()
+        elif command == "rm-branch":
+            repository.remove_branch(args[2])
     except GitletException as e:
         print(e, file=sys.stderr)
         exit(1)

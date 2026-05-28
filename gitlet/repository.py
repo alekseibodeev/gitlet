@@ -17,6 +17,7 @@ from gitlet.error import (
     BlankMessageExcepiton,
     BranchExistsException,
     CheckoutUnsafeException,
+    CurrentBranchRemoveException,
     FileNotTrackedExcepiton,
     HeadCheckoutException,
     MergeItselfException,
@@ -305,6 +306,22 @@ def branch(name: str) -> None:
     if new_branch.exists():
         raise BranchExistsException()
     new_branch.dump()
+
+
+def remove_branch(name: str) -> None:
+    """Deletes the pointer associated with the branch with the given name.
+
+    If a branch with the given name does not exists, exit with error message:
+    - "No such branch exists."
+
+    If you try to remove the branch you're currently on, abort and prints:
+    - "Cannot remove the current branch."
+    """
+    current_branch = Branch.load(read_head())
+    given_branch = Branch.load(name)
+    if current_branch.name == given_branch.name:
+        raise CurrentBranchRemoveException()
+    given_branch.remove()
 
 
 def get_conflict_message(current_content: bytes, given_content: bytes) -> bytes:

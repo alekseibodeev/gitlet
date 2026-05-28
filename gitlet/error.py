@@ -69,3 +69,8 @@ class UncommitedChangexException(GitletException):
 class MergeItselfException(GitletException):
     def __init__(self):
         super().__init__("Cannot merge a branch with itself.")
+
+
+class CurrentBranchRemoveException(GitletException):
+    def __init__(self):
+        super().__init__("Cannot remove the current branch.")
