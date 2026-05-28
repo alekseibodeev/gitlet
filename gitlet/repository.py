@@ -602,3 +602,29 @@ def status() -> None:
     for name in untracked:
         print(name)
     print()
+
+
+def reset(commit_id: str) -> None:
+    """Checks out all the files tracked by the given commit.
+
+    Removes tracked files that are not presented in that commit.
+
+    Moves the current branch's head to that commit node.
+
+    If not commit with the given id exists, print:
+    - "No commit with that id exists."
+
+    If there is an untracked file that would be overwritten by reset, print:
+    - "There is an untracked file in the way; delete it, or add and commmit it first."
+
+    Attributes:
+    commit_id -- the id of the commit to checkout
+    """
+    current_branch = Branch.load(read_head())
+    current_commit = Commit.load(current_branch.head)
+    given_commit = Commit.load(commit_id)
+    if not given_commit.safe_checkout(current_commit):
+        raise CheckoutUnsafeException()
+    given_commit.checkout(current_commit)
+    current_branch.head = given_commit.id
+    current_branch.dump()
